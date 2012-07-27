@@ -1,6 +1,10 @@
 ﻿@{
     ViewBag.Title = "Home Page";
 }
+<style type="text/css">.deleteTest { }
+
+ .editTest { }
+</style>
 
 <div id="TestTemp">
 
@@ -41,7 +45,7 @@
 <script id="testEdit" type="text/html">
     <hr/>
     <form>
-        <input type="hidden" name="Id" value="{{id}}"/>
+        <input type="hidden" name="Id" id="id" value="{{Id}}"/>
         <label for="name">Name</label>
         <input type="text" name="Name" id="name" required value="{{Name}}"/>
         <label for="number">Number</label>
