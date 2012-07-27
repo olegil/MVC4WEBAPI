@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity.Infrastructure;
 using System.Net;
@@ -18,13 +19,13 @@ namespace MvcApplication1.Controllers
         }
 
         // GET api/webapi
-        public IEnumerable<TestModel> GetAllTests()
+        public IEnumerable<Test> GetAllTests()
         {
             return _db.Test;
         }
 
         // GET api/webapi/5
-        public TestModel GetTest(int id)
+        public Test GetTest(int id)
         {
             var test = _db.Test.Find(id);
             if(test == null)
@@ -35,12 +36,22 @@ namespace MvcApplication1.Controllers
         }
 
         // POST api/webapi
-        public void Post(string value)
+        public HttpResponseMessage PostTest(Test test)
         {
+            if (ModelState.IsValid)
+            {
+                _db.Test.Add(test);
+                _db.SaveChanges();
+
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.Created, test);
+                response.Headers.Location = new Uri(Url.Link("DefaultApi", new { id = test.Id }));
+                return response;
+            }
+            return Request.CreateResponse(HttpStatusCode.BadRequest);
         }
 
         // PUT api/webapi/5
-        public HttpResponseMessage PutTest(int id, TestModel test)
+        public HttpResponseMessage PutTest(int id, Test test)
         {
             if(ModelState.IsValid && id==test.Id)
             {

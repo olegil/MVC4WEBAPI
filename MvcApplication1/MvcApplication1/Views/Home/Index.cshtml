@@ -6,6 +6,8 @@
 
 </div>
 
+<button id="createTest">Create Test</button>
+
 <div id="TestEditTemp">
 </div>
 <script id="testTable" type="text/html">
@@ -39,12 +41,10 @@
 <script id="testEdit" type="text/html">
     <hr/>
     <form>
-        <input type="hidden" name="id" value="{{id}}"/>
+        <input type="hidden" name="Id" value="{{id}}"/>
         <label for="name">Name</label>
         <input type="text" name="Name" id="name" required value="{{Name}}"/>
-
         <label for="number">Number</label>
-
         <input type="number" min="0" max="200" name="Number" id="number" required value="{{Number}}"/>
         <input type="submit" id="saveTest">
 
@@ -55,87 +55,111 @@
 @section scripts{
     <script src="~/Scripts/handlebars.js" >  </script>
     <script>
-        var testServer = (function() {
+        var testServer = (function () {
 
             var testApiUrl = '@Url.RouteUrl("DefaultApi", new {httproute = "", controller = "WebApi"})';
-            $(document).ajaxError(function(event, xhr) {
+
+            $(document).ajaxError(function (event, xhr) {
                 alert(xhr.status + ":" + xhr.statusText);
             });
 
-            var getTests = function() {
+            var getTests = function () {
                 return $.ajax(testApiUrl);
             };
 
-            var getTest = function(id) {
+            var getTest = function (id) {
                 return $.ajax(testApiUrl + "/" + id);
             };
-            
-            var updateTest = function(test) {
 
-                return $.ajax(testApiUrl + "/" + test.Id, { type: "PUT", data: test });
+            var updateTest = function (test) {
 
+                return $.ajax(testApiUrl + "/" + test.Id,
+                    { type: "PUT", data: test });
+
+            };
+            var addTest = function (test) {
+                return $.ajax(testApiUrl,
+                    { type: "POST", data: test });
             };
 
             return {
+                addTest: addTest,
                 updateTest: updateTest,
                 getTests: getTests,
                 getTest: getTest
             };
 
-        }());
+        } ());
 
-        (function() {
-            var templates = { };
-
-            var compileTemplates = function() {
+        (function () {
+            var templates = {};
+            var compileTemplates = function () {
                 templates.testTable = Handlebars.compile($("#testTable").html());
                 templates.testEdit = Handlebars.compile($("#testEdit").html());
             };
-
-            var showAllTests = function(data) {
+            var showAllTests = function (data) {
                 var output = templates.testTable({ test: data });
                 $("#TestTemp").html(output);
             };
-            var showTestForEdit = function(test) {
+            var showTestForEdit = function (test) {
                 var output = templates.testEdit(test);
                 $("#TestEditTemp").html(output);
             };
-            var refreshTest = function() {
+            var refreshTest = function () {
                 testServer.getTests().done(showAllTests);
             };
 
-            var editTest = function() {
+            var editTest = function () {
                 var id = getId(this);
                 testServer.getTest(id).done(showTestForEdit);
 
             };
 
-            var clearEdit = function() {
+            var createTest = function () {
 
-                $("#TestEditTemp").empry();
+                var test = { Id: 0, Name: "", Number: 0 };
+                showTestForEdit(test);
             };
 
-            var saveTest = function() {
-                var test = { "Id": $("#id").val(), "Name": $("#name").val(), "Number": $("#number").val() };
-                testServer.updateTest(test).done(refreshTest, clearEdit);
+            var clearEdit = function () {
+
+                $("#TestEditTemp").empty();
+            };
+
+            var saveTest = function () {
+                var test = {
+                    "Id": $("#id").val(),
+                    "Name": $("#name").val(),
+                    "Number": $("#number").val()
+                };
+
+                var operation;
+                if (test.Id != "0") {
+                    operation = testServer.updateTest(test);
+
+                }
+                else {
+                    operation = testServer.addTest(test);
+
+                };
+                operation.done(refreshTest, clearEdit);
                 return false;
             };
-
-            var wireEvents = function() {
+            var wireEvents = function () {
                 $(document).on("click", ".editTest", editTest);
                 $(document).on("click", "#saveTest", saveTest);
+                $(document).on("click", "#createTest", createTest);
             };
-            var getId = function(element) {
+            var getId = function (element) {
                 return $(element).parents("tr").attr("data-id");
             };
-
-            $(function() {
+            $(function () {
                 wireEvents();
                 compileTemplates();
                 refreshTest();
             });
 
-        }());
+        } ());
 
 </script>
 }

@@ -133,7 +133,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
-    <Compile Include="Models\TestModel.cs" />
+    <Compile Include="Models\Test.cs" />
     <Compile Include="Models\TestDB.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
