@@ -71,8 +71,24 @@ namespace MvcApplication1.Controllers
         }
 
         // DELETE api/webapi/5
-        public void Delete(int id)
+        public HttpResponseMessage DeleteTest(int id)
         {
+
+            Test test = _db.Test.Find(id);
+            if (test == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
+            _db.Test.Remove(test);
+            try
+            {
+                _db.SaveChanges();
+            }
+            catch(DbUpdateConcurrencyException)
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, test);
         }
     }
 }

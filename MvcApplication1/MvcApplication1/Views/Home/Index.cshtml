@@ -86,7 +86,12 @@
                     { type: "POST", data: test });
             };
 
+            var deleteTest = function (id) {
+                return $.ajax(testApiUrl + "/" + id, { type: "DELETE" });
+
+            };
             return {
+                deleteTest:deleteTest,
                 addTest: addTest,
                 updateTest: updateTest,
                 getTests: getTests,
@@ -125,6 +130,11 @@
                 showTestForEdit(test);
             };
 
+            var deleteTest = function() {
+
+                var id = getId(this);
+                testServer.deleteTest(id).done(refreshTest);
+            };
             var clearEdit = function () {
 
                 $("#TestEditTemp").empty();
@@ -151,6 +161,7 @@
             };
             var wireEvents = function () {
                 $(document).on("click", ".editTest", editTest);
+                $(document).on("click", ".deleteTest", deleteTest);
                 $(document).on("click", "#saveTest", saveTest);
                 $(document).on("click", "#createTest", createTest);
             };
