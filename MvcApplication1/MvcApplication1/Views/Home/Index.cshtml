@@ -1,0 +1,141 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div id="TestTemp">
+
+</div>
+
+<div id="TestEditTemp">
+</div>
+<script id="testTable" type="text/html">
+    <table>
+        <thead>
+            <th>Name</th>
+            <th>Number</th>
+            <th></th>
+        </thead>
+        <tbody>
+            {{#each test}}
+            <tr data-id={{Id}}>
+                <td>
+                    {{Name}}
+                </td>
+                <td>
+                    {{Number}}
+                </td>
+                <td>
+                    <button class="editTest">Edit</button>
+                    <button class="deleteTest">Delete</button>
+
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+
+    </table>
+</script>
+
+<script id="testEdit" type="text/html">
+    <hr/>
+    <form>
+        <input type="hidden" name="id" value="{{id}}"/>
+        <label for="name">Name</label>
+        <input type="text" name="Name" id="name" required value="{{Name}}"/>
+
+        <label for="number">Number</label>
+
+        <input type="number" min="0" max="200" name="Number" id="number" required value="{{Number}}"/>
+        <input type="submit" id="saveTest">
+
+    </form>
+
+</script>
+
+@section scripts{
+    <script src="~/Scripts/handlebars.js" >  </script>
+    <script>
+        var testServer = (function() {
+
+            var testApiUrl = '@Url.RouteUrl("DefaultApi", new {httproute = "", controller = "WebApi"})';
+            $(document).ajaxError(function(event, xhr) {
+                alert(xhr.status + ":" + xhr.statusText);
+            });
+
+            var getTests = function() {
+                return $.ajax(testApiUrl);
+            };
+
+            var getTest = function(id) {
+                return $.ajax(testApiUrl + "/" + id);
+            };
+            
+            var updateTest = function(test) {
+
+                return $.ajax(testApiUrl + "/" + test.Id, { type: "PUT", data: test });
+
+            };
+
+            return {
+                updateTest: updateTest,
+                getTests: getTests,
+                getTest: getTest
+            };
+
+        }());
+
+        (function() {
+            var templates = { };
+
+            var compileTemplates = function() {
+                templates.testTable = Handlebars.compile($("#testTable").html());
+                templates.testEdit = Handlebars.compile($("#testEdit").html());
+            };
+
+            var showAllTests = function(data) {
+                var output = templates.testTable({ test: data });
+                $("#TestTemp").html(output);
+            };
+            var showTestForEdit = function(test) {
+                var output = templates.testEdit(test);
+                $("#TestEditTemp").html(output);
+            };
+            var refreshTest = function() {
+                testServer.getTests().done(showAllTests);
+            };
+
+            var editTest = function() {
+                var id = getId(this);
+                testServer.getTest(id).done(showTestForEdit);
+
+            };
+
+            var clearEdit = function() {
+
+                $("#TestEditTemp").empry();
+            };
+
+            var saveTest = function() {
+                var test = { "Id": $("#id").val(), "Name": $("#name").val(), "Number": $("#number").val() };
+                testServer.updateTest(test).done(refreshTest, clearEdit);
+                return false;
+            };
+
+            var wireEvents = function() {
+                $(document).on("click", ".editTest", editTest);
+                $(document).on("click", "#saveTest", saveTest);
+            };
+            var getId = function(element) {
+                return $(element).parents("tr").attr("data-id");
+            };
+
+            $(function() {
+                wireEvents();
+                compileTemplates();
+                refreshTest();
+            });
+
+        }());
+
+</script>
+}
